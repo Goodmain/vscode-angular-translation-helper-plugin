@@ -1,9 +1,7 @@
-# Change Log
+## Angular Translation Helper Changelog
 
-All notable changes to the "angular-translator" extension will be documented in this file.
+<a name="0.0.1"></a>
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
+# 0.0.1 (2022-06-10)
 
 - Initial release
