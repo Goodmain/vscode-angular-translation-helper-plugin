@@ -25,7 +25,10 @@
     "javascript",
     "ts",
     "js",
-    "code"
+    "code",
+    "angular translate",
+    "angular translation",
+    "angular translate helper"
   ],
   "activationEvents": [
     "onCommand:translationHelper.setBasePath",
@@ -37,22 +40,38 @@
     "configuration": {
       "title": "Angular Translation Helper",
       "properties": {
-        "translationHelper.translationCodeMask": {
+        "translationHelper.translationsPath": {
           "type": "string",
           "order": 0,
+          "default": "/assets/i18n",
+          "minLength": 1,
+          "markdownDescription": "Path to translation files (eg. `/assets/i18n`)."
+        },
+        "translationHelper.supportedLanguages": {
+          "type": "string",
+          "order": 1,
+          "default": "*",
+          "minLength": 1,
+          "pattern": "^([a-zA-Z_]+(\\,*[a-zA-Z_]+)*|\\*)$",
+          "patternErrorMessage": "Only letters, commas and underscore are available.",
+          "markdownDescription": "Comma separated list of supported languages (eg. `ar,fr,en_UK`) or `*` for all languages."
+        },
+        "translationHelper.translationCodeMask": {
+          "type": "string",
+          "order": 2,
           "default": "{{ '[BASE_PATH][PREFIX][TRANSLATION_KEY]' | translate }}",
           "markdownDescription": "Translation code mask. Available tags: `[BASE_PATH]`, `[PREFIX]`, `[TRANSLATION_KEY]`"
         },
         "translationHelper.maxWords": {
           "type": "integer",
-          "order": 1,
+          "order": 3,
           "default": 5,
           "minimum": 1,
           "description": "Max number of the words which would be converted into translation key."
         },
         "translationHelper.caseFormat": {
           "type": "string",
-          "order": 2,
+          "order": 4,
           "enum": ["uppercase", "lowercase"],
           "default": "uppercase",
           "description": "Case format of the resulted translation key."
