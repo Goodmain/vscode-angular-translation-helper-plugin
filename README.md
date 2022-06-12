@@ -1,6 +1,6 @@
 # Angular Translation Helper for VSCode
 
-This extension for Visual Studio Code generates `translation code` from the text and appends it into translation files. Nested and flat translation keys styles are supported.
+This extension for Visual Studio Code generates `translation code` from the text and appends it into translation files
 
 ![demo](https://github.com/Goodmain/vscode-angular-translation-helper-plugin/raw/main/images/demo.gif)
 
