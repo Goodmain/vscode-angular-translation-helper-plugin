@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import fs = require('fs');
 import { Settings } from '../models';
-//import * as copypaste from 'copy-paste';
-//import jsonfile = require("jsonfile");
+import jsonfile = require('jsonfile');
 
 export async function convertText(context: vscode.ExtensionContext) {
   const editor = vscode.window.activeTextEditor;
@@ -13,6 +12,7 @@ export async function convertText(context: vscode.ExtensionContext) {
     const selection = editor.selection;
     const basePath = toSelectedCase(settings.basePath, settings.isUpperCase);
     const prefix = toSelectedCase(settings.prefix, settings.isUpperCase);
+    const selectedText = document.getText(selection);
 
     if (!isTranslationsPathExists(settings)) {
       vscode.window.showErrorMessage(`Translation path '${settings.translationsPath}' doesn't exist`);
@@ -25,7 +25,7 @@ export async function convertText(context: vscode.ExtensionContext) {
       return;
     }
 
-    let translationKey = toSelectedCase(document.getText(selection), settings.isUpperCase)
+    let translationKey = toSelectedCase(selectedText, settings.isUpperCase)
       .trim()
       .replace(/[\s\t\-]/g, '_')
       .replace(/[^a-zA-Z0-9_]/g, '')
@@ -42,8 +42,14 @@ export async function convertText(context: vscode.ExtensionContext) {
     translationKey = prefix + translationKey;
 
     editor.edit((editBuilder) => {
-      editBuilder.replace(selection, translationCode);
-      //vscode.env.clipboard.writeText(`"${translationKey}": "${selectedText}"`);
+      if (settings.autoEditTranslationFiles) {
+        if (updateTranslationFiles(settings, ((basePath) ? `${basePath}.` : '') + translationKey, selectedText)) {
+          editBuilder.replace(selection, translationCode);
+        }
+      } else {
+        editBuilder.replace(selection, translationCode);
+        vscode.env.clipboard.writeText(`"${translationKey}": "${selectedText}"`);
+      }
     });
   }
 }
@@ -62,7 +68,7 @@ function isTranslationsFilesExists(settings: Settings): string {
   let notExistLanguages: string[] = [];
 
   settings.languages.forEach((language) => {
-    const languagePath = `${settings.fullTranslationPath}/${language}.json`;
+    const languagePath = `${settings.fullTranslationPath}${language}.json`;
 
     if (!fs.existsSync(languagePath)) {
       notExistLanguages.push(language);
@@ -72,6 +78,48 @@ function isTranslationsFilesExists(settings: Settings): string {
   return notExistLanguages.join(',');
 }
 
-function updateTranslationFile(): string {
-  return '';
+function updateTranslationFiles(settings: Settings, translationKey: string, text: string): boolean {
+  let languages = settings.languages;
+
+  if (!languages.length) {
+    const files = fs.readdirSync(settings.fullTranslationPath, { withFileTypes: true });
+    languages = files
+      .filter((file) => file.isFile() && file.name.includes('.json'))
+      .map((file) => file.name.replace('.json', ''));
+    
+    if (!languages.length) {
+      vscode.window.showErrorMessage(`There are no translation files in the directory ${settings.translationsPath}`);
+      return false;
+    }
+  }
+
+  languages.forEach((language) => {
+    const filePath = `${settings.fullTranslationPath}${language}.json`;
+    let translation = jsonfile.readFileSync(filePath);
+    
+    if (settings.isNestedKeys) {
+      const keyParts = translationKey.split('.');
+      translation = addNestedValue(translation, keyParts, text);
+    } else {
+      translation[translationKey] = text;
+    }
+
+    jsonfile.writeFileSync(filePath, translation, { spaces: 2 });
+  });
+
+  return true;
+}
+
+function addNestedValue(obj: any, parts: string[], value: string): any {
+  if (obj[parts[0]] === undefined && parts.length > 1) {
+    obj[parts[0]] = {};
+  }
+
+  if (parts.length == 1) {
+    obj[parts[0]] = value;
+  } else {
+    obj[parts[0]] = addNestedValue(obj[parts[0]], parts.slice(1), value);
+  }
+
+  return obj;
 }

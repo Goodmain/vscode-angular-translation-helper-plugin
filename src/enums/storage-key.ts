@@ -3,7 +3,9 @@ export enum StorageKey {
   prefix = 'translationHelper.prefix',
   maxWords = 'maxWords',
   translationCodeMask = 'translationCodeMask',
-  caseFormat = 'caseFormat',
+  caseType = 'caseType',
+  autoEditTranslationFiles = 'autoEditTranslationFiles',
   translationsPath = 'translationsPath',
   supportedLanguages = 'supportedLanguages',
+  translationKeyStyle = 'translationKeyStyle',
 }
